@@ -102,17 +102,20 @@ def add_business_days(start_date, days):
             remaining -= 1
     return current
     
-# ====================== GOOGLE SHEETS SETUP (using Streamlit Secrets) ======================
-scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+# ====================== GOOGLE SHEETS SETUP (Streamlit Secrets) ======================
+try:
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    client = gspread.authorize(creds)
 
-# Load credentials from Streamlit Secrets
-creds_dict = dict(st.secrets["gcp_service_account"])
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
-
-sheet = client.open_by_key("16po2bcvWIQW8zOzM9GJRNsosezpXUA0H_iF5Ry-d3ek")
-contributions_sheet = sheet.worksheet("Contributions")
-feedback_sheet = sheet.worksheet("Feedback")
+    sheet = client.open_by_key("16po2bcvWIQW8zOzM9GJRNsosezpXUA0H_iF5Ry-d3ek")
+    contributions_sheet = sheet.worksheet("Contributions")
+    feedback_sheet = sheet.worksheet("Feedback")
+    st.success("✅ Connected to Google Sheet successfully!")
+except Exception as e:
+    st.error(f"Google Sheet connection failed: {str(e)}")
+    st.stop()
 
 # ====================== CONFIG ======================
 st.set_page_config(
@@ -366,29 +369,6 @@ def get_approx_ip():
         return "unknown"
     except Exception:
         return "unknown"
-
-# ====================== FEEDBACK ======================
-st.subheader("💬 Ideas or Suggestions?")
-feedback = st.text_area("Share any feature requests, improvements, or comments here:", placeholder="E.g. 'Add best/worst case dates' or 'Make it look even nicer on mobile'")
-
-can_feedback = True
-if st.session_state.last_feedback_time is not None:
-    time_since = time.time() - st.session_state.last_feedback_time
-    if time_since < RATE_LIMIT_SECONDS:
-        remaining = int(RATE_LIMIT_SECONDS - time_since)
-        st.warning(f"Feedback cooldown: {remaining // 60} min {remaining % 60} sec left")
-        can_feedback = False
-
-if st.button("Send Feedback") and can_feedback:
-    if feedback.strip():
-        feedback_sheet.append_row([
-            dt.now().strftime("%m/%d/%Y %H:%M:%S"),
-            feedback
-        ])
-        st.success(f"✅ Feedback recorded on {dt.now().strftime('%m/%d/%Y %H:%M')} — thank you!")
-        st.session_state.last_feedback_time = time.time()
-    else:
-        st.warning("Please type something before sending.")
 
 st.caption("Roses are red, violets are blue. I can't wait to assemble, well-regulatedly, for the boogaloo.")
 st.markdown("---")
