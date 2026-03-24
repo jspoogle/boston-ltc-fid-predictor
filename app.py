@@ -5,6 +5,8 @@ import plotly.express as px
 import os
 import time
 from datetime import datetime as dt
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials
 
 # Rate limit config
 RATE_LIMIT_SECONDS = 600
@@ -99,8 +101,16 @@ def add_business_days(start_date, days):
         if is_business_day(current):
             remaining -= 1
     return current
+# ====================== GOOGLE SHEETS SETUP ======================
+scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+creds = ServiceAccountCredentials.from_json_keyfile_name("service_account.json", scope)
+client = gspread.authorize(creds)
 
-# Config
+sheet = client.open_by_key("16po2bcvWIQW8zOzM9GJRNsosezpXUA0H_iF5Ry-d3ek")
+contributions_sheet = sheet.worksheet("Contributions")
+feedback_sheet = sheet.worksheet("Feedback")
+
+# ====================== CONFIG ======================
 st.set_page_config(
     page_title="Boston LTC/FID Licensing Wait Time for Fingerprinting Appointment Calculator",
     page_icon="🖐️",
@@ -241,20 +251,18 @@ with main_col:
                 st.error("Licence in-hand date is required unless 'I have not received this yet' is checked.")
             else:
                 licence_value = user_licence_date if not no_licence_yet else None
-                contrib = pd.DataFrame([{
-                    "City_Town": user_city,
-                    "Submission_Date": user_sub,
-                    "Fingerprint_Date": user_fp,
-                    "Licence_In_Hand_Date": licence_value,
-                    "Submitted_At": dt.now().strftime("%m/%d/%Y %H:%M:%S"),
-                    "Approx_IP": approx_ip,
-                    "No_Licence_Yet": no_licence_yet
-                }])
-                file_path = "contributions.csv"
-                if not os.path.exists(file_path):
-                    contrib.to_csv(file_path, index=False)
-                else:
-                    contrib.to_csv(file_path, mode="a", header=False, index=False)
+    
+                # Save to Google Sheet
+                contributions_sheet.append_row([
+                    user_city,
+                    user_sub.strftime('%m/%d/%Y'),
+                    user_fp.strftime('%m/%d/%Y'),
+                    licence_value.strftime('%m/%d/%Y') if licence_value else "",
+                    dt.now().strftime("%m/%d/%Y %H:%M:%S"),
+                    approx_ip,
+                    no_licence_yet
+                ])
+                
                 st.success(f"✅ Thank you! Your data has been saved for review on {dt.now().strftime('%m/%d/%Y %H:%M')}.")
                 st.session_state.last_contrib_time = time.time()
                 st.session_state.last_ip = approx_ip
@@ -369,8 +377,10 @@ if st.session_state.last_feedback_time is not None:
 
 if st.button("Send Feedback") and can_feedback:
     if feedback.strip():
-        with open("feedback.txt", "a") as f:
-            f.write(f"[{dt.now().strftime('%m/%d/%Y %H:%M:%S')}] {feedback}\n")
+        feedback_sheet.append_row([
+            dt.now().strftime("%m/%d/%Y %H:%M:%S"),
+            feedback
+        ])
         st.success(f"✅ Feedback recorded on {dt.now().strftime('%m/%d/%Y %H:%M')} — thank you!")
         st.session_state.last_feedback_time = time.time()
     else:
