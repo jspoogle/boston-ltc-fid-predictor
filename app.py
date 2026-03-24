@@ -102,16 +102,18 @@ def add_business_days(start_date, days):
             remaining -= 1
     return current
     
-# ====================== GOOGLE SHEETS SETUP ======================
+# ====================== GOOGLE SHEETS SETUP (using Streamlit Secrets) ======================
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 
-# Use service_account.json from the repo
-creds = ServiceAccountCredentials.from_json_keyfile_name("service_account.json", scope)
+# Load credentials from Streamlit Secrets
+creds_dict = dict(st.secrets["gcp_service_account"])
+creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(creds)
 
 sheet = client.open_by_key("16po2bcvWIQW8zOzM9GJRNsosezpXUA0H_iF5Ry-d3ek")
 contributions_sheet = sheet.worksheet("Contributions")
 feedback_sheet = sheet.worksheet("Feedback")
+
 # ====================== CONFIG ======================
 st.set_page_config(
     page_title="Boston LTC/FID Licensing Wait Time for Fingerprinting Appointment Calculator",
