@@ -1,7 +1,7 @@
 streamlit
 pandas
 plotly
-openpyxl
 statsmodels
 gspread
 oauth2client
+pygsheets
