@@ -105,14 +105,14 @@ def add_business_days(start_date, days):
 # ====================== GOOGLE SHEETS SETUP ======================
 try:
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    creds = ServiceAccountCredentials.from_json_keyfile_name("service_account.json", scope)
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
 
     sheet = client.open_by_key("16po2bcvWIQW8zOzM9GJRNsosezpXUA0H_iF5Ry-d3ek")
     contributions_sheet = sheet.worksheet("Contributions")
     feedback_sheet = sheet.worksheet("Feedback")
-    
-    st.success("✅ Google Sheet connected successfully!")
+    st.success("✅ Google Sheet connected!")
 except Exception as e:
     st.error(f"Google Sheet connection failed: {str(e)}")
     st.stop()
