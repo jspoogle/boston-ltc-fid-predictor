@@ -102,20 +102,17 @@ def add_business_days(start_date, days):
             remaining -= 1
     return current
     
-# ====================== GOOGLE SHEETS SETUP (Streamlit Secrets) ======================
+# ====================== GOOGLE SHEETS SETUP ======================
 try:
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-    
-    # Simple way - load the entire secret as dict
-    creds_dict = dict(st.secrets["gcp_service_account"])
-    creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+    creds = ServiceAccountCredentials.from_json_keyfile_name("service_account.json", scope)
     client = gspread.authorize(creds)
 
     sheet = client.open_by_key("16po2bcvWIQW8zOzM9GJRNsosezpXUA0H_iF5Ry-d3ek")
     contributions_sheet = sheet.worksheet("Contributions")
     feedback_sheet = sheet.worksheet("Feedback")
     
-    st.success("✅ Successfully connected to Google Sheet!")
+    st.success("✅ Google Sheet connected successfully!")
 except Exception as e:
     st.error(f"Google Sheet connection failed: {str(e)}")
     st.stop()
