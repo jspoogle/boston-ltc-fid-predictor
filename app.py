@@ -102,18 +102,11 @@ def add_business_days(start_date, days):
             remaining -= 1
     return current
     
-# ====================== GOOGLE SHEETS SETUP (Diagnostic) ======================
+# ====================== GOOGLE SHEETS SETUP ======================
 try:
-    st.write("Debug: Secrets keys available:", list(st.secrets.keys()))
-    
-    if "gcp_service_account" not in st.secrets:
-        st.error("Secret 'gcp_service_account' not found in Streamlit Secrets.")
-        st.stop()
+    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
     secret = st.secrets["gcp_service_account"]
-    st.write("Debug: Secret content keys:", list(secret.keys()) if hasattr(secret, 'keys') else "Not a dict")
-    
-    scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
     creds_dict = {
         "type": secret.get("type", "service_account"),
@@ -121,11 +114,6 @@ try:
         "private_key_id": secret.get("private_key_id"),
         "private_key": secret.get("private_key"),
         "client_email": secret.get("client_email"),
-        "client_id": secret.get("client_id"),
-        "auth_uri": secret.get("auth_uri"),
-        "token_uri": secret.get("token_uri"),
-        "auth_provider_x509_cert_url": secret.get("auth_provider_x509_cert_url"),
-        "client_x509_cert_url": secret.get("client_x509_cert_url"),
     }
     
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
