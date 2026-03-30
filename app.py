@@ -116,7 +116,7 @@ try:
 except Exception as e:
     st.error(f"Google Sheet connection failed: {str(e)}")
     st.stop()
-
+    
 # ====================== CONFIG ======================
 st.set_page_config(
     page_title="Boston LTC/FID Licensing Wait Time for Fingerprinting Appointment Calculator",
