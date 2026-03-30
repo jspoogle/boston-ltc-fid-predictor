@@ -102,36 +102,27 @@ def add_business_days(start_date, days):
             remaining -= 1
     return current
     
-# ====================== GOOGLE SHEETS SETUP (Diagnostic) ======================
+# ====================== GOOGLE SHEETS SETUP ======================
 try:
-    st.write("🔍 Debug: Checking secrets...")
-    st.write("Available secrets keys:", list(st.secrets.keys()))
-
-    secret = st.secrets["gcp_service_account"]
-    st.write("Secret keys found:", list(secret.keys()) if hasattr(secret, 'keys') else "Not a dict")
-
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
+    secret = st.secrets["gcp_service_account"]
+    
+    # Minimal credentials dict - only what we have
     creds_dict = {
-        "type": secret.get("type", "service_account"),
+        "type": "service_account",
         "project_id": secret.get("project_id"),
         "private_key_id": secret.get("private_key_id"),
         "private_key": secret.get("private_key"),
         "client_email": secret.get("client_email"),
     }
     
-    st.write("✅ Credentials dict created")
-    
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
-    st.write("✅ Client authorized")
 
     sheet = client.open_by_key("16po2bcvWIQW8zOzM9GJRNsosezpXUA0H_iF5Ry-d3ek")
-    st.write("✅ Sheet opened by key")
-
     contributions_sheet = sheet.worksheet("Contributions")
     feedback_sheet = sheet.worksheet("Feedback")
-    st.write("✅ Worksheets found")
     
     st.success("✅ Google Sheet connected successfully!")
 except Exception as e:
