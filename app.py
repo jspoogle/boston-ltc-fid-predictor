@@ -108,16 +108,12 @@ try:
     
     secret = st.secrets["gcp_service_account"]
     
-    # Build credentials dict with all standard fields
     creds_dict = {
-        "type": "service_account",
+        "type": secret.get("type", "service_account"),
         "project_id": secret.get("project_id"),
         "private_key_id": secret.get("private_key_id"),
         "private_key": secret.get("private_key"),
         "client_email": secret.get("client_email"),
-        "client_id": secret.get("client_id", "103860184555797436849"),
-        "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-        "token_uri": "https://oauth2.googleapis.com/token",
     }
     
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
