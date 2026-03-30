@@ -106,20 +106,20 @@ def add_business_days(start_date, days):
 try:
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
-    # Get the secret as a flat dict
-    secret = st.secrets["gcp_service_account"]
+    # Direct access to the secret
+    secret = st.secrets.gcp_service_account
     
     creds_dict = {
-        "type": secret.get("type", "service_account"),
-        "project_id": secret.get("project_id"),
-        "private_key_id": secret.get("private_key_id"),
-        "private_key": secret.get("private_key"),
-        "client_email": secret.get("client_email"),
-        "client_id": secret.get("client_id"),
-        "auth_uri": secret.get("auth_uri"),
-        "token_uri": secret.get("token_uri"),
-        "auth_provider_x509_cert_url": secret.get("auth_provider_x509_cert_url"),
-        "client_x509_cert_url": secret.get("client_x509_cert_url"),
+        "type": secret.type,
+        "project_id": secret.project_id,
+        "private_key_id": secret.private_key_id,
+        "private_key": secret.private_key,
+        "client_email": secret.client_email,
+        "client_id": secret.client_id,
+        "auth_uri": secret.auth_uri,
+        "token_uri": secret.token_uri,
+        "auth_provider_x509_cert_url": secret.auth_provider_x509_cert_url,
+        "client_x509_cert_url": secret.client_x509_cert_url,
     }
     
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
