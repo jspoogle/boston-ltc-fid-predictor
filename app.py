@@ -102,28 +102,30 @@ def add_business_days(start_date, days):
             remaining -= 1
     return current
     
-# ====================== GOOGLE SHEETS SETUP (Simplified) ======================
+# ====================== GOOGLE SHEETS SETUP ======================
 try:
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
-    # Load the secret as a flat dict
+    # Load secret
     secret = st.secrets["gcp_service_account"]
+    
     creds_dict = {
-        "type": secret.get("type", "service_account"),
-        "project_id": secret.get("project_id"),
-        "private_key_id": secret.get("private_key_id"),
-        "private_key": secret.get("private_key"),
-        "client_email": secret.get("client_email"),
-        "client_id": secret.get("client_id"),
-        "auth_uri": secret.get("auth_uri"),
-        "token_uri": secret.get("token_uri"),
-        "auth_provider_x509_cert_url": secret.get("auth_provider_x509_cert_url"),
-        "client_x509_cert_url": secret.get("client_x509_cert_url"),
+        "type": secret["type"],
+        "project_id": secret["project_id"],
+        "private_key_id": secret["private_key_id"],
+        "private_key": secret["private_key"],
+        "client_email": secret["client_email"],
+        "client_id": secret["client_id"],
+        "auth_uri": secret["auth_uri"],
+        "token_uri": secret["token_uri"],
+        "auth_provider_x509_cert_url": secret["auth_provider_x509_cert_url"],
+        "client_x509_cert_url": secret["client_x509_cert_url"],
     }
     
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
 
+    # Open the sheet
     sheet = client.open_by_key("16po2bcvWIQW8zOzM9GJRNsosezpXUA0H_iF5Ry-d3ek")
     contributions_sheet = sheet.worksheet("Contributions")
     feedback_sheet = sheet.worksheet("Feedback")
