@@ -106,20 +106,8 @@ def add_business_days(start_date, days):
 try:
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     
-    # Load from secrets
-    creds_dict = {
-        "type": st.secrets["gcp_service_account"]["type"],
-        "project_id": st.secrets["gcp_service_account"]["project_id"],
-        "private_key_id": st.secrets["gcp_service_account"]["private_key_id"],
-        "private_key": st.secrets["gcp_service_account"]["private_key"],
-        "client_email": st.secrets["gcp_service_account"]["client_email"],
-        "client_id": st.secrets["gcp_service_account"]["client_id"],
-        "auth_uri": st.secrets["gcp_service_account"]["auth_uri"],
-        "token_uri": st.secrets["gcp_service_account"]["token_uri"],
-        "auth_provider_x509_cert_url": st.secrets["gcp_service_account"]["auth_provider_x509_cert_url"],
-        "client_x509_cert_url": st.secrets["gcp_service_account"]["client_x509_cert_url"],
-    }
-    
+    # Simple way - load the entire secret as dict
+    creds_dict = dict(st.secrets["gcp_service_account"])
     creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
     client = gspread.authorize(creds)
 
@@ -208,19 +196,19 @@ with main_col:
             st.caption(f"Raw model estimate was {predicted_raw.strftime('%m/%d/%Y')} — adjusted forward to next business day.")
         st.caption("This is an estimate based on historical trends. Actual times vary due to processing volume, staffing, etc.")
 
-    def get_approx_ip():
-        try:
-            if hasattr(st.context, "ip_address"):
-                ip = st.context.ip_address
-                if ip:
-                    return ip
-            headers = st.context.headers or {}
-            forwarded = headers.get("X-Forwarded-For", "unknown")
-            if forwarded != "unknown":
-                return forwarded.split(",")[0].strip()
-            return "unknown"
-        except Exception:
-            return "unknown"
+def get_approx_ip():
+    try:
+        if hasattr(st.context, "ip_address"):
+            ip = st.context.ip_address
+            if ip:
+                return ip
+        headers = st.context.headers or {}
+        forwarded = headers.get("X-Forwarded-For", "unknown")
+        if forwarded != "unknown":
+            return forwarded.split(",")[0].strip()
+        return "unknown"
+    except Exception:
+        return "unknown"
     
     # ====================== CONTRIBUTE YOUR DATA ======================
     st.subheader("💡 Help Make This More Accurate")
